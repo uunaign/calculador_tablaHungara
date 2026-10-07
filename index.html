@@ -46,7 +46,12 @@
                 <input class="numerosInput" type="text" name="marca" id="marca" placeholder="marca (solo números)">
                 <input class="numerosInput" type="text" name="resultado" id="resultado" readonly>
             </div>
-            <input type="button" value="Guardar" id="saveButton">
+
+            <div class="actionContainer">
+                <!-- <button id="switchButton" >Puntos a marca <img src="assets/iconoSwitch.png"></button> -->
+                <input type="button" value="Guardar" id="saveButton">
+            </div>
+
 
             <div id="divider"></div>
 
@@ -779,7 +784,7 @@
 
             if (savedItems.children.length === 0) {
                 savedListMessage.textContent =
-                    'Todavía no hay resultados guardados.';
+                    'Pulsa "Guardar" para añadir resultados.';
             }
 
             actualizarSumaPuntos();
