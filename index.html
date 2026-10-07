@@ -65,7 +65,10 @@
 </body>
 
 <script>
-    // 1. Estructura de datos de todas las pruebas por pista y género
+    // ============================================================
+    // 1. PRUEBAS DISPONIBLES
+    // ============================================================
+
     const pruebasData = {
         indoor: {
             hombres: [
@@ -87,6 +90,7 @@
                 "Relevo 4x400 m", "Relevo 4x400 m Mixto"
             ]
         },
+
         outdoor: {
             hombres: [
                 "100 m", "110 m Vallas", "200 m", "300 m", "400 m", "400 m Vallas",
@@ -97,8 +101,10 @@
                 "Lanzamiento de Martillo", "Lanzamiento de Jabalina", "Decatlón",
                 "5000 m Marcha", "10000 m Marcha", "20 km Marcha", "35 km Marcha",
                 "5 km Ruta", "10 km Ruta", "Medio Maratón", "Maratón",
-                "Relevo 4x100 m", "Relevo 4x200 m", "Relevo 4x400 m", "Relevo 4x400 m Mixto"
+                "Relevo 4x100 m", "Relevo 4x200 m", "Relevo 4x400 m",
+                "Relevo 4x400 m Mixto"
             ],
+
             mujeres: [
                 "100 m", "100 m Vallas", "200 m", "300 m", "400 m", "400 m Vallas",
                 "600 m", "800 m", "1000 m", "1500 m", "1 Milla", "2000 m",
@@ -114,15 +120,196 @@
         }
     };
 
-    // 2. Elementos DOM
+
+    // ============================================================
+    // 2. COEFICIENTES DE LAS TABLAS WORLD ATHLETICS 2025
+    //
+    // Fórmula:
+    //
+    // P = floor(A * (marca + B)^2 + C)
+    //
+    // Para carreras:
+    //   marca = tiempo en segundos
+    //
+    // Para saltos/lanzamientos:
+    //   marca = metros
+    //
+    // Los coeficientes están reconstruidos a partir de las
+    // tablas 2025 para reproducir las puntuaciones publicadas.
+    // ============================================================
+
+    const coeficientesPuntos = {
+        indoor: {
+            hombres: {
+                "50 m": { a: 95.7947315614892, b: -9.20011243979529, c: -0.0108719762247347 },
+                "50 m Vallas": { a: 34.1985572939567, b: -12.3501468643245, c: -0.0141586666959483 },
+                "60 m": { a: 68.5984823180968, b: -10.7000404766713, c: -0.00232885801779048 },
+                "60 m Vallas": { a: 23.8994047730581, b: -14.6001171131773, c: -0.0115636516393351 },
+                "200 m": { a: 5.0399563061941, b: -36.0000703478131, c: -0.000805415749709937 },
+                "300 m": { a: 1.80097118975851, b: -58.0157531333906, c: -0.0560496345087813 },
+                "400 m": { a: 0.979289167534175, b: -80.6336223334769, c: -0.0665904219777076 },
+                "500 m": { a: 0.563770342184982, b: -106.055295609237, c: -0.0975761988775048 },
+                "600 m": { a: 0.38908977829879, b: -131.071359004986, c: -0.099944392704856 },
+                "800 m": { a: 0.196896175226111, b: -184.109809460692, c: -0.105768305750644 },
+                "1000 m": { a: 0.113598003678301, b: -240.150826794899, c: -0.106394559500586 },
+                "1500 m": { a: 0.0418823263845071, b: -386.262199369974, c: -0.107461452177631 },
+                "1 Milla": { a: 0.0367931047079987, b: -415.285981910543, c: -0.111365793593905 },
+                "2000 m": { a: 0.0225349927389584, b: -528.366981558616, c: -0.112743458969817 },
+                "3000 m": { a: 0.00829750875938155, b: -840.619113075392, c: -0.114418005151492 },
+                "2 Millas": { a: 0.0071888154831961, b: -907.664716405767, c: -0.113338801296777 },
+                "5000 m": { a: 0.00289140022516431, b: -1441.05918442553, c: -0.114070620293205 },
+
+                "Salto de Altura": { a: 32.3668044695651, b: 11.5031837301266, c: -4987.0901766496 },
+                "Salto con Pértiga": { a: 3.04670949630158, b: 39.3233417330174, c: -4991.27909562965 },
+                "Salto de Longitud": { a: 1.92891604878184, b: 48.4122844954969, c: -5000.23085045621 },
+                "Triple Salto": { a: 0.461389436204383, b: 98.558516246877, c: -4996.24459740714 },
+                "Lanzamiento de Peso": { a: 0.0456294058101856, b: 634.665193503466, c: -18434.5458032916 },
+
+                "3000 m Marcha": { a: 0.00131406861351082, b: -1606.58140163677, c: -0.115169297649572 },
+                "5000 m Marcha": { a: 0.000465594740127988, b: -2702.67644532808, c: -0.115906529322729 },
+
+                "Relevo 4x200 m": { a: 0.31124650987846, b: -144.082588761, c: -0.103101343415801 },
+                "Relevo 4x400 m": { a: 0.0487635188354187, b: -340.242114209567, c: -0.110495224362239 },
+                "Relevo 4x400 m Mixto": { a: 0.0268035370886686, b: -405.333487892589, c: -0.109392140509954 }
+            },
+
+            mujeres: {
+                "50 m": { a: 33.0280031254004, b: -12.1002107233854, c: -0.0110070365799402 },
+                "50 m Vallas": { a: 16.199412254225, b: -15.300174904787, c: -0.0136404986847083 },
+                "60 m": { a: 24.8995837441132, b: -14.000058201633, c: -0.0039967699412955 },
+                "60 m Vallas": { a: 11.1598913373275, b: -18.2000578484834, c: -0.00317906608324847 },
+                "200 m": { a: 1.96171597478093, b: -47.5019741120474, c: -0.00897685813470162 },
+                "300 m": { a: 0.658136865564473, b: -79.0486658131929, c: -0.0929412894947745 },
+                "400 m": { a: 0.321629066606913, b: -112.080533396162, c: -0.101410328094516 },
+                "500 m": { a: 0.170950969183615, b: -150.620515521906, c: -0.103355013382952 },
+                "600 m": { a: 0.106018049686428, b: -190.506455525508, c: -0.103649514868721 },
+                "800 m": { a: 0.0570410525337698, b: -264.222629349192, c: -0.110663319190735 },
+                "1000 m": { a: 0.0346313298830064, b: -340.692377219104, c: -0.110367560558643 },
+                "1500 m": { a: 0.0136104437035664, b: -540.476490910218, c: -0.111403898098615 },
+                "1 Milla": { a: 0.0115063472112889, b: -586.021116584541, c: -0.112098276325014 },
+                "2000 m": { a: 0.00682987115082336, b: -752.882408365951, c: -0.114187037901047 },
+                "3000 m": { a: 0.0025823140754936, b: -1201.1218724766, c: -0.114192826096314 },
+                "2 Millas": { a: 0.00219542370419289, b: -1297.52276713695, c: -0.115662405118655 },
+                "5000 m": { a: 0.000822532836545534, b: -2102.0038496216, c: -0.115351154756809 },
+
+                "Salto de Altura": { a: 39.3845022788058, b: 10.5605815083669, c: -4993.73774671066 },
+                "Salto con Pértiga": { a: 3.95549588521597, b: 34.8058622904474, c: -4996.35504502709 },
+                "Salto de Longitud": { a: 1.96735511913598, b: 49.2028645266539, c: -4996.0658320454 },
+                "Triple Salto": { a: 0.429054031348938, b: 105.294844994491, c: -4988.1074643776 },
+                "Lanzamiento de Peso": { a: 0.0494091318858515, b: 614.049910469901, c: -18655.2474285476 },
+
+                "3000 m Marcha": { a: 0.000920233428465663, b: -1843.89652341792, c: -0.115498038399437 },
+                "5000 m Marcha": { a: 0.00032362488616188, b: -3143.20894998983, c: -0.115831127820002 },
+
+                "Relevo 4x200 m": { a: 0.0823767291488483, b: -212.18040712787, c: -0.103731223791783 },
+                "Relevo 4x400 m": { a: 0.0154553756223302, b: -484.445332154657, c: -0.112800363861425 },
+                "Relevo 4x400 m Mixto": { a: 0.0268035370886686, b: -405.333487892589, c: -0.109392140509954 }
+            }
+        },
+
+        outdoor: {
+            hombres: {
+                "100 m": { a: 24.6288799070582, b: -17.000136984368, c: -0.00576964352148934 },
+                "110 m Vallas": { a: 7.65995613281501, b: -25.800058949562, c: -0.0046444293056993 },
+                "200 m": { a: 5.07995194080961, b: -35.5000946056005, c: -0.0036044847456651 },
+                "300 m": { a: 1.82894331119931, b: -57.2081901963999, c: -0.023821560766919 },
+                "400 m": { a: 1.01925941050537, b: -79.0322475486151, c: -0.0651159430099142 },
+                "400 m Vallas": { a: 0.544810066421502, b: -95.5562021931513, c: -0.0926866790514396 },
+                "600 m": { a: 0.384817544087737, b: -129.570922446441, c: -0.100277525793899 },
+                "800 m": { a: 0.197489862597616, b: -182.109960537639, c: -0.0999027541056421 },
+                "1000 m": { a: 0.111996021692214, b: -237.653722846011, c: -0.106855935654494 },
+                "1500 m": { a: 0.0405461307661193, b: -385.266604901103, c: -0.10761482361886 },
+                "1 Milla": { a: 0.0350010074698906, b: -415.289005894501, c: -0.109031680008229 },
+                "2000 m": { a: 0.0217474257036329, b: -528.373371350157, c: -0.112831467789874 },
+                "3000 m": { a: 0.00812619545773422, b: -840.622457434037, c: -0.112862233671876 },
+                "3000 m Obstáculos": { a: 0.00430326086862444, b: -1020.86453422392, c: -0.114691013051925 },
+                "2 Millas": { a: 0.00700939669105685, b: -905.472740585193, c: -0.113295959507013 },
+                "5000 m": { a: 0.00276974063221631, b: -1441.0841066278, c: -0.115009984848257 },
+                "10000 m": { a: 0.00052242726812525, b: -3152.5220199549, c: -0.115669964282461 },
+
+                "Salto de Altura": { a: 32.3668044695651, b: 11.5031837301266, c: -4987.0901766496 },
+                "Salto con Pértiga": { a: 3.04670949630158, b: 39.3233417330174, c: -4991.27909562965 },
+                "Salto de Longitud": { a: 1.92891604878184, b: 48.4122844954969, c: -5000.23085045621 },
+                "Triple Salto": { a: 0.461389436204383, b: 98.558516246877, c: -4996.24459740714 },
+                "Lanzamiento de Peso": { a: 0.0456294058101856, b: 634.665193503466, c: -18434.5458032916 },
+                "Lanzamiento de Disco": { a: 0.00430265037040784, b: 2075.39776004463, c: -18558.90184416 },
+                "Lanzamiento de Martillo": { a: 0.00316056634736718, b: 2380.49219166297, c: -17930.8153900912 },
+                "Lanzamiento de Jabalina": { a: 0.00275743977646664, b: 2503.21414731714, c: -17298.4030918848 },
+
+                "5000 m Marcha": { a: 0.000465594740127988, b: -2702.67644532808, c: -0.115906529322729 },
+                "10000 m Marcha": { a: 0.000113358164907925, b: -5555.43042714067, c: -0.115976350923575 },
+                "20 km Marcha": { a: 0.0000272676434231811, b: -11411.093353909, c: -0.116083546420214 },
+                "35 km Marcha": { a: 0.00000612148067361281, b: -22823.4417455701, c: -0.116184853422055 },
+
+                "5 km Ruta": { a: 0.00277795125418142, b: -1440.00608122835, c: -0.00265182049679424 },
+                "10 km Ruta": { a: 0.000523992689179992, b: -3150.0129441683, c: -0.00389869145146804 },
+                "Medio Maratón": { a: 0.0000945305850647467, b: -7143.50735519759, c: -0.0723376305759302 },
+                "Maratón": { a: 0.0000200486241780477, b: -15310.8792483403, c: -0.106047737379413 },
+
+                "Relevo 4x100 m": { a: 1.23407882266256, b: -69.5266225454315, c: -0.0596162871124761 },
+                "Relevo 4x200 m": { a: 0.296963290079366, b: -144.083826820055, c: -0.0990936937268998 },
+                "Relevo 4x400 m": { a: 0.0503562029169277, b: -334.240328945481, c: -0.107795454929146 },
+                "Relevo 4x400 m Mixto": { a: 0.0272423661687186, b: -400.330940025015, c: -0.112690320412185 }
+            },
+
+            mujeres: {
+                "100 m": { a: 9.91977589066291, b: -22.000078194217, c: -0.00158550359719811 },
+                "100 m Vallas": { a: 3.97991450849535, b: -30.0002050842986, c: -0.00566611304748221 },
+                "200 m": { a: 2.24177574528697, b: -45.5012687206108, c: -0.0101479512422884 },
+                "300 m": { a: 0.698579674357507, b: -77.0461691900147, c: -0.0848506779329909 },
+                "400 m": { a: 0.334218656166102, b: -110.077391615487, c: -0.0917802032045074 },
+                "400 m Vallas": { a: 0.208048366851209, b: -130.104521535362, c: -0.0953390910622147 },
+                "600 m": { a: 0.128659520867424, b: -180.140764362097, c: -0.105105482685758 },
+                "800 m": { a: 0.0686117453865966, b: -250.200478299204, c: -0.109057114065763 },
+                "1000 m": { a: 0.0380932278726135, b: -330.275409923067, c: -0.108910938201007 },
+                "1500 m": { a: 0.0133613343427868, b: -540.48019332952, c: -0.111368084138576 },
+                "1 Milla": { a: 0.0116159808234826, b: -580.51913801611, c: -0.113127185878056 },
+                "2000 m": { a: 0.00674611865308066, b: -750.686752861441, c: -0.113373074966603 },
+                "3000 m": { a: 0.00253143505981362, b: -1201.13589846405, c: -0.114864085615864 },
+                "3000 m Obstáculos": { a: 0.00131905849306203, b: -1511.57717758684, c: -0.115240551059742 },
+                "2 Millas": { a: 0.00215058454289871, b: -1297.53191193738, c: -0.115207063110574 },
+                "5000 m": { a: 0.000805583928124052, b: -2102.02517340966, c: -0.115109355262121 },
+                "10000 m": { a: 0.000170684893227011, b: -4504.42539641816, c: -0.115868726715689 },
+
+                "Salto de Altura": { a: 39.3845022788058, b: 10.5605815083669, c: -4993.73774671066 },
+                "Salto con Pértiga": { a: 3.95549588521597, b: 34.8058622904474, c: -4996.35504502709 },
+                "Salto de Longitud": { a: 1.96735511913598, b: 49.2028645266539, c: -4996.0658320454 },
+                "Triple Salto": { a: 0.429054031348938, b: 105.294844994491, c: -4988.1074643776 },
+                "Lanzamiento de Peso": { a: 0.0494091318858515, b: 614.049910469901, c: -18655.2474285476 },
+                "Lanzamiento de Disco": { a: 0.00460546311593961, b: 1942.9401912751, c: -17403.9283287311 },
+                "Lanzamiento de Martillo": { a: 0.00342745978086912, b: 2289.65804474082, c: -17990.282205918 },
+                "Lanzamiento de Jabalina": { a: 0.00464859247023676, b: 1935.79014603304, c: -17437.4580075694 },
+
+                "5000 m Marcha": { a: 0.00032362488616188, b: -3143.20894998983, c: -0.115831127820002 },
+                "10000 m Marcha": { a: 0.0000782638695857073, b: -6426.53991307892, c: -0.115943177114787 },
+                "20 km Marcha": { a: 0.0000186436062066595, b: -13213.4277917902, c: -0.116140907838599 },
+                "35 km Marcha": { a: 0.00000491513881163226, b: -25466.1540499328, c: -0.116152826161397 },
+
+                "5 km Ruta": { a: 0.000807999104033254, b: -2100.00083165322, c: -0.000447983931735507 },
+                "10 km Ruta": { a: 0.000171016964577539, b: -4501.57121018189, c: -0.0557621265929811 },
+            "Medio Maratón": { a: 0.0000945305850647467, b: -7143.50735519759, c: -0.0723376305759302 }            
+        }
+        }
+    };
+
+
+    // ============================================================
+    // 3. ELEMENTOS DOM
+    // ============================================================
+
     const selectPrueba = document.getElementById('prueba-select');
     const inputMarca = document.getElementById('marca');
     const inputResultado = document.getElementById('resultado');
     const saveButton = document.getElementById('saveButton');
     const savedItems = document.getElementById('savedItems');
     const savedListMessage = document.getElementById('savedListMessage');
+    const resultadoPuntos = document.getElementById('resultadoPuntos');
 
-    // 3. Función para actualizar las opciones del select según los radios
+
+    // ============================================================
+    // 4. ACTUALIZAR LISTA DE PRUEBAS
+    // ============================================================
+
     function actualizarPruebas() {
         const radioPista = document.querySelector('input[name="tipo_pista"]:checked');
         const radioGenero = document.querySelector('input[name="genero"]:checked');
@@ -135,18 +322,20 @@
 
             selectPrueba.innerHTML = '';
 
-            // Opción por defecto
             const defaultOption = document.createElement('option');
             defaultOption.value = "";
             defaultOption.textContent = "Selecciona una prueba";
             defaultOption.disabled = true;
             defaultOption.selected = true;
+
             selectPrueba.appendChild(defaultOption);
 
             lista.forEach(prueba => {
                 const option = document.createElement('option');
+
                 option.value = prueba;
                 option.textContent = prueba;
+
                 selectPrueba.appendChild(option);
             });
         }
@@ -154,132 +343,470 @@
         limpiarInputs();
     }
 
-    // 4. Clasificador de disciplinas
+
+    // ============================================================
+    // 5. CLASIFICADOR DE PRUEBAS
+    // ============================================================
+
     function obtenerTipoPrueba(nombrePrueba) {
-        if (!nombrePrueba) return 'segundos';
+        if (!nombrePrueba) {
+            return 'segundos';
+        }
 
         const prueba = nombrePrueba.toLowerCase();
 
-        // Distancia / Altura
-        if (prueba.includes('salto') || prueba.includes('lanzamiento') || prueba.includes('peso') || prueba.includes('pesado')) {
+        if (
+            prueba.includes('salto') ||
+            prueba.includes('lanzamiento') ||
+            prueba.includes('peso') ||
+            prueba.includes('pesado')
+        ) {
             return 'distancia';
         }
 
-        // Tiempos largos (Minutos)
         if (
-            prueba.includes('800') || prueba.includes('1000') || prueba.includes('1500') ||
-            prueba.includes('milla') || prueba.includes('2000') || prueba.includes('3000') ||
-            prueba.includes('5000') || prueba.includes('10000') || prueba.includes('marcha') ||
-            prueba.includes('ruta') || prueba.includes('maratón') || prueba.includes('obstáculos')
+            prueba.includes('800') ||
+            prueba.includes('1000') ||
+            prueba.includes('1500') ||
+            prueba.includes('milla') ||
+            prueba.includes('2000') ||
+            prueba.includes('3000') ||
+            prueba.includes('5000') ||
+            prueba.includes('10000') ||
+            prueba.includes('maratón') ||
+            prueba.includes('marcha') ||
+            prueba.includes('ruta') ||
+            prueba.includes('medio maratón') ||
+            prueba.includes('obstáculos') ||
+            prueba.includes('20 km') ||
+            prueba.includes('35 km')
         ) {
             return 'minutos';
         }
 
-        // Tiempos cortos (Segundos)
         return 'segundos';
     }
 
-    // 5. Limpieza de entradas
+
+    // ============================================================
+    // 6. LIMPIAR INPUTS
+    // ============================================================
+
     function limpiarInputs() {
-        if (inputMarca) inputMarca.value = '';
-        if (inputResultado) inputResultado.value = '';
+        if (inputMarca) {
+            inputMarca.value = '';
+        }
+
+        if (inputResultado) {
+            inputResultado.value = '';
+        }
     }
 
-    // 6. Formateador dinámico y transparente (permite borrar de forma natural)
+
+    // ============================================================
+    // 7. FORMATEO DE MARCA
+    // ============================================================
+
     if (inputMarca) {
         inputMarca.addEventListener('input', (e) => {
             const pruebaSeleccionada = selectPrueba.value;
-            if (!pruebaSeleccionada) return;
+
+            if (!pruebaSeleccionada) {
+                return;
+            }
 
             const tipo = obtenerTipoPrueba(pruebaSeleccionada);
+
             let raw = e.target.value.replace(/\D/g, '');
 
             if (!raw) {
                 e.target.value = '';
+                inputResultado.value = '';
                 return;
             }
 
             let formatted = '';
 
             if (tipo === 'distancia' || tipo === 'segundos') {
-                // Ejemplos: "1" -> "1", "11" -> "11", "1140" -> "11.40"
+
                 if (raw.length <= 2) {
                     formatted = raw;
                 } else {
-                    formatted = raw.slice(0, -2) + '.' + raw.slice(-2);
+                    formatted =
+                        raw.slice(0, -2) +
+                        '.' +
+                        raw.slice(-2);
                 }
-            }
-            else if (tipo === 'minutos') {
+
+            } else if (tipo === 'minutos') {
+
                 if (raw.length <= 2) {
                     formatted = raw;
+
                 } else if (raw.length <= 4) {
-                    formatted = raw.slice(0, -2) + '.' + raw.slice(-2);
+
+                    formatted =
+                        raw.slice(0, -2) +
+                        '.' +
+                        raw.slice(-2);
+
                 } else {
-                    formatted = raw.slice(0, -4) + "'" + raw.slice(-4, -2) + '.' + raw.slice(-2);
+
+                    formatted =
+                        raw.slice(0, -4) +
+                        "'" +
+                        raw.slice(-4, -2) +
+                        '.' +
+                        raw.slice(-2);
                 }
             }
 
             e.target.value = formatted;
+
+            calcularPuntos();
         });
     }
 
-    // 7. Event listeners de interacción
+
+    // ============================================================
+    // 8. CONVERTIR LA MARCA A UN NÚMERO
+    // ============================================================
+
+    function convertirMarcaAValor(marca) {
+        if (!marca) {
+            return null;
+        }
+
+        let valor = marca.trim();
+
+        if (!valor) {
+            return null;
+        }
+
+        valor = valor.replace(',', '.');
+
+        // Formato HH:MM:SS.xx
+        if (valor.includes(':')) {
+            const partes = valor.split(':');
+
+            if (partes.length === 3) {
+                const horas = parseFloat(partes[0]);
+                const minutos = parseFloat(partes[1]);
+                const segundos = parseFloat(partes[2]);
+
+                if (
+                    Number.isFinite(horas) &&
+                    Number.isFinite(minutos) &&
+                    Number.isFinite(segundos)
+                ) {
+                    return horas * 3600 + minutos * 60 + segundos;
+                }
+            }
+
+            if (partes.length === 2) {
+                const minutos = parseFloat(partes[0]);
+                const segundos = parseFloat(partes[1]);
+
+                if (
+                    Number.isFinite(minutos) &&
+                    Number.isFinite(segundos)
+                ) {
+                    return minutos * 60 + segundos;
+                }
+            }
+        }
+
+        // Formato X'YY.ZZ
+        if (valor.includes("'")) {
+            const partes = valor.split("'");
+
+            const minutos = parseFloat(partes[0]);
+            const segundos = parseFloat(partes[1]);
+
+            if (
+                Number.isFinite(minutos) &&
+                Number.isFinite(segundos)
+            ) {
+                return minutos * 60 + segundos;
+            }
+        }
+
+        const numero = parseFloat(valor);
+
+        return Number.isFinite(numero)
+            ? numero
+            : null;
+    }
+
+
+    // ============================================================
+    // 9. CALCULAR PUNTOS
+    // ============================================================
+
+    function calcularPuntos() {
+        if (!selectPrueba || !inputMarca || !inputResultado) {
+            return null;
+        }
+
+        const prueba = selectPrueba.value;
+
+        if (!prueba) {
+            inputResultado.value = '';
+            return null;
+        }
+
+        const radioPista = document.querySelector(
+            'input[name="tipo_pista"]:checked'
+        );
+
+        const radioGenero = document.querySelector(
+            'input[name="genero"]:checked'
+        );
+
+        const pista = radioPista
+            ? radioPista.value
+            : 'indoor';
+
+        const genero = radioGenero
+            ? radioGenero.value
+            : 'hombres';
+
+        const marca = convertirMarcaAValor(inputMarca.value);
+
+        if (marca === null || marca <= 0) {
+            inputResultado.value = '';
+            return null;
+        }
+
+        const coef =
+            coeficientesPuntos?.[pista]?.[genero]?.[prueba];
+
+        /*
+         * Estas pruebas no tienen una única marca que pueda
+         * convertirse directamente en puntos.
+         *
+         * Los combinados se calculan sumando las puntuaciones
+         * de sus pruebas individuales.
+         *
+         * El lanzamiento de pesado tampoco aparece en las
+         * tablas 2025 proporcionadas.
+         */
+        if (!coef) {
+            inputResultado.value = '—';
+            return null;
+        }
+
+        const tipo = obtenerTipoPrueba(prueba);
+
+        /*
+         * En carreras, cuando el tiempo supera la marca base
+         * de la fórmula, no se conceden puntos.
+         *
+         * El vértice de la parábola está en:
+         *
+         *     marcaBase = -B
+         */
+        if (tipo !== 'distancia') {
+            const marcaBase = -coef.b;
+
+            if (marca >= marcaBase) {
+                inputResultado.value = '0';
+                return 0;
+            }
+        }
+
+        /*
+         * Fórmula:
+         *
+         * P = floor(A * (marca + B)^2 + C)
+         */
+        let puntos =
+            Math.floor(
+                coef.a *
+                Math.pow(marca + coef.b, 2) +
+                coef.c +
+                1e-9
+            );
+
+        if (!Number.isFinite(puntos)) {
+            inputResultado.value = '';
+            return null;
+        }
+
+        if (puntos < 0) {
+            puntos = 0;
+        }
+
+        /*
+         * Las tablas proporcionadas llegan hasta 1400 puntos.
+         */
+        if (puntos > 1400) {
+            puntos = 1400;
+        }
+
+        inputResultado.value = puntos;
+
+        return puntos;
+    }
+
+
+    // ============================================================
+    // 10. SUMA DE PUNTOS
+    // ============================================================
+
+    function actualizarSumaPuntos() {
+        if (!resultadoPuntos) {
+            return;
+        }
+
+        let suma = 0;
+
+        document.querySelectorAll('.savedItem').forEach(item => {
+            const puntos = parseInt(item.dataset.puntos, 10);
+
+            if (Number.isFinite(puntos)) {
+                suma += puntos;
+            }
+        });
+
+        resultadoPuntos.value = suma;
+    }
+
+
+    // ============================================================
+    // 11. EVENTOS DE LOS RADIOS
+    // ============================================================
+
     document.querySelectorAll('input[type="radio"]').forEach(radio => {
         radio.addEventListener('change', actualizarPruebas);
     });
 
+
+    // ============================================================
+    // 12. CAMBIO DE PRUEBA
+    // ============================================================
+
     if (selectPrueba) {
-        selectPrueba.addEventListener('change', limpiarInputs);
+        selectPrueba.addEventListener('change', () => {
+            limpiarInputs();
+        });
     }
 
+
+    // ============================================================
+    // 13. GUARDAR RESULTADO
+    // ============================================================
+
     saveButton.addEventListener('click', () => {
+
         const prueba = selectPrueba.value;
         const marca = inputMarca.value.trim();
 
         if (!prueba) {
-            savedListMessage.textContent = 'Selecciona una prueba antes de guardar.';
+            savedListMessage.textContent =
+                'Selecciona una prueba antes de guardar.';
+
             selectPrueba.focus();
+
             return;
         }
 
         if (!marca) {
-            savedListMessage.textContent = 'Introduce una marca antes de guardar.';
+            savedListMessage.textContent =
+                'Introduce una marca antes de guardar.';
+
             inputMarca.focus();
+
+            return;
+        }
+
+        const puntos = calcularPuntos();
+
+        if (puntos === null) {
+            savedListMessage.textContent =
+                'Esta prueba no tiene una fórmula de puntuación directa disponible.';
+
             return;
         }
 
         const item = document.createElement('li');
+
         item.className = 'savedItem';
+        item.dataset.puntos = puntos;
+
 
         const pruebaTexto = document.createElement('span');
-        pruebaTexto.className = 'savedItemPrueba';
-        pruebaTexto.textContent = prueba;
+
+        pruebaTexto.className =
+            'savedItemPrueba';
+
+        pruebaTexto.textContent =
+            prueba;
+
 
         const marcaTexto = document.createElement('span');
-        marcaTexto.textContent = `Marca: ${marca}`;
+
+        marcaTexto.textContent =
+            `Marca: ${marca}`;
+
 
         const puntuacionTexto = document.createElement('span');
-        puntuacionTexto.textContent = `Puntuación: ${inputResultado.value.trim() || '—'}`;
+
+        puntuacionTexto.textContent =
+            `Puntuación: ${puntos}`;
+
 
         const eliminarButton = document.createElement('button');
-        eliminarButton.className = 'deleteSavedItem';
-        eliminarButton.type = 'button';
-        eliminarButton.textContent = 'Eliminar';
-        eliminarButton.setAttribute('aria-label', `Eliminar resultado de ${prueba}`);
+
+        eliminarButton.className =
+            'deleteSavedItem';
+
+        eliminarButton.type =
+            'button';
+
+        eliminarButton.textContent =
+            'Eliminar';
+
+        eliminarButton.setAttribute(
+            'aria-label',
+            `Eliminar resultado de ${prueba}`
+        );
+
+
         eliminarButton.addEventListener('click', () => {
+
             item.remove();
+
             if (savedItems.children.length === 0) {
-                savedListMessage.textContent = 'Todavía no hay resultados guardados.';
+                savedListMessage.textContent =
+                    'Todavía no hay resultados guardados.';
             }
+
+            actualizarSumaPuntos();
         });
 
-        item.append(pruebaTexto, marcaTexto, puntuacionTexto, eliminarButton);
+
+        item.append(
+            pruebaTexto,
+            marcaTexto,
+            puntuacionTexto,
+            eliminarButton
+        );
+
         savedItems.appendChild(item);
+
         savedListMessage.textContent = '';
+
+        actualizarSumaPuntos();
+
         limpiarInputs();
     });
 
-    // 8. Carga inicial
+
+    // ============================================================
+    // 14. CARGA INICIAL
+    // ============================================================
+
     actualizarPruebas();
 </script>
 
