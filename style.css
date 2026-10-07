@@ -1,0 +1,207 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+
+}
+
+body {
+    padding: 20px;
+    background: url(assets/bg-image.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 90vh;
+    overflow: hidden;
+
+
+    display: flex;
+    justify-content: center;
+    vertical-align: middle;
+    align-items: center;
+
+}
+
+#formContainer {
+    width: 500px;
+    height: 600px;
+    display: flex;
+
+    padding: 20px;
+
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 15px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(6.5px);
+    -webkit-backdrop-filter: blur(6.5px);
+    border: 1px solid rgba(119, 114, 114, 0.24);
+}
+
+form {
+    flex-grow: 1;
+    border-radius: 5px;
+    background-color: rgb(255, 252, 246);
+    border: 1px solid rgba(119, 114, 114, 0.062);
+    padding: 20px 20px;
+
+    text-align: center;
+    align-items: stretch;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+#formTitle {
+    margin: 0;
+    padding: 0;
+    font-weight: 100;
+    color: #ff552b;
+    margin-bottom: 15px;
+}
+
+.radio-inputs {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    border-radius: 10px;
+    border: 1px solid rgba(119, 114, 114, 0.24);
+
+    background-color: #EEE;
+    box-sizing: border-box;
+    box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
+    padding: 0.25rem;
+    width: 100%;
+    font-size: 14px;
+}
+
+.radio-inputs .radio {
+    flex: 1 1 auto;
+    text-align: center;
+}
+
+.radio-inputs .radio input {
+    display: none;
+}
+
+.radio-inputs .radio .name {
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    border: none;
+    padding: .5rem 0;
+    color: rgba(51, 65, 85, 1);
+    transition: all .15s ease-in-out;
+}
+
+.radio-inputs .radio input:checked+.name {
+    background-color: #ff552b;
+    color: #EEE;
+    font-weight: 600;
+}
+
+.select-container {
+    width: 100%;
+}
+
+.select-prueba {
+    width: 100%;
+    padding: 0.75rem 0.75rem;
+    font-size: 14px;
+    font-family: inherit;
+    color: rgba(51, 65, 85, 1);
+    box-sizing: border-box;
+
+    background-color: #EEE;
+    border: 1px solid rgba(119, 114, 114, 0.24);
+    border-radius: 10px;
+    box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
+    box-sizing: border-box;
+
+    cursor: pointer;
+    outline: none;
+    transition: all 0.15s ease-in-out;
+
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(51, 65, 85, 1)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2rem;
+}
+
+.select-prueba:focus {
+    border-color: #ff552b;
+    box-shadow: 0 0 0 2px rgba(255, 85, 43, 0.25);
+}
+
+.select-prueba option {
+    background-color: #FFF;
+    color: rgba(51, 65, 85, 1);
+    padding: 0.5rem;
+}
+
+
+/* Contenedor flexible para alinear los inputs en línea */
+.calculadoraPuntos {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.calculadoraPuntos .numerosInput {
+    flex: 1;
+    width: 100%;
+    padding: 0.75rem 0.85rem;
+    font-size: 14px;
+    font-family: inherit;
+    color: rgba(51, 65, 85, 1);
+    
+    background-color: #EEE;
+    border: 1px solid rgba(119, 114, 114, 0.24);
+    border-radius: 10px;
+    box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
+    box-sizing: border-box;
+    outline: none;
+    transition: all 0.15s ease-in-out;
+}
+
+.calculadoraPuntos .numerosInput::placeholder {
+    color: rgba(100, 116, 139, 0.6);
+    font-size: 13px;
+}
+
+.calculadoraPuntos .numerosInput:focus {
+    border-color: #ff552b;
+    box-shadow: 0 0 0 2px rgba(255, 85, 43, 0.25);
+    background-color: #FFF;
+}
+
+.calculadoraPuntos #resultado {
+    font-weight: 700;
+    color: #ff552b;
+    text-align: center;
+    background-color: rgba(238, 238, 238, 0.6);
+    cursor: default;
+}
+
+.calculadoraPuntos #resultado:active,
+.calculadoraPuntos #resultado:focus {
+    border-color: rgba(119, 114, 114, 0.24);
+    box-shadow: none;
+    background-color: rgba(238, 238, 238, 0.6);
+    outline: none;
+}
+
+#divider {
+    display: flex;
+    background-color: #ff552b;
+    width: 100%;
+    height: 1px;
+    margin: 15px 0;
+}

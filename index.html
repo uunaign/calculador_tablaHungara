@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div id="formContainer">
+
+
+        <form>
+            <h1 id="formTitle">Calculadora tabla hungara</h1>
+            <div class="radio-inputs">
+                <label class="radio">
+                    <input type="radio" name="tipo_pista" value="indoor" checked>
+                    <span class="name">Pista cubierta</span>
+                </label>
+                <label class="radio">
+                    <input type="radio" name="tipo_pista" value="outdoor">
+                    <span class="name">Aire libre</span>
+                </label>
+            </div>
+
+            <div class="radio-inputs">
+                <label class="radio">
+                    <input type="radio" name="genero" value="hombres" checked>
+                    <span class="name">Hombre</span>
+                </label>
+                <label class="radio">
+                    <input type="radio" name="genero" value="mujeres">
+                    <span class="name">Mujer</span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <select id="prueba-select" class="select-prueba">
+                </select>
+            </div>
+
+            <div class="calculadoraPuntos">
+                <input class="numerosInput" type="text" name="marca" id="marca" placeholder="marca (solo números)">
+                <input class="numerosInput" type="text" name="resultado" id="resultado" readonly>
+            </div>
+            <input type="button" value="Guardar" id="saveButton">
+
+            <div id="divider"></div>
+
+        </form>
+    </div>
+
+</body>
+
+<script>
+    // 1. Estructura de datos de todas las pruebas por pista y género
+    const pruebasData = {
+        indoor: {
+            hombres: [
+                "50 m", "50 m Vallas", "60 m", "60 m Vallas", "200 m", "300 m",
+                "400 m", "500 m", "600 m", "800 m", "1000 m", "1500 m", "1 Milla",
+                "2000 m", "3000 m", "2 Millas", "5000 m", "Salto de Altura",
+                "Salto con Pértiga", "Salto de Longitud", "Triple Salto",
+                "Lanzamiento de Peso", "Lanzamiento de Pesado (Weight Throw)",
+                "Heptatlón", "3000 m Marcha", "5000 m Marcha", "Relevo 4x200 m",
+                "Relevo 4x400 m", "Relevo 4x400 m Mixto"
+            ],
+            mujeres: [
+                "50 m", "50 m Vallas", "60 m", "60 m Vallas", "200 m", "300 m",
+                "400 m", "500 m", "600 m", "800 m", "1000 m", "1500 m", "1 Milla",
+                "2000 m", "3000 m", "2 Millas", "5000 m", "Salto de Altura",
+                "Salto con Pértiga", "Salto de Longitud", "Triple Salto",
+                "Lanzamiento de Peso", "Lanzamiento de Pesado (Weight Throw)",
+                "Pentatlón", "3000 m Marcha", "5000 m Marcha", "Relevo 4x200 m",
+                "Relevo 4x400 m", "Relevo 4x400 m Mixto"
+            ]
+        },
+        outdoor: {
+            hombres: [
+                "100 m", "110 m Vallas", "200 m", "300 m", "400 m", "400 m Vallas",
+                "600 m", "800 m", "1000 m", "1500 m", "1 Milla", "2000 m",
+                "3000 m", "3000 m Obstáculos", "2 Millas", "5000 m", "10000 m",
+                "Salto de Altura", "Salto con Pértiga", "Salto de Longitud",
+                "Triple Salto", "Lanzamiento de Peso", "Lanzamiento de Disco",
+                "Lanzamiento de Martillo", "Lanzamiento de Jabalina", "Decatlón",
+                "5000 m Marcha", "10000 m Marcha", "20 km Marcha", "35 km Marcha",
+                "5 km Ruta", "10 km Ruta", "Medio Maratón", "Maratón",
+                "Relevo 4x100 m", "Relevo 4x200 m", "Relevo 4x400 m", "Relevo 4x400 m Mixto"
+            ],
+            mujeres: [
+                "100 m", "100 m Vallas", "200 m", "300 m", "400 m", "400 m Vallas",
+                "600 m", "800 m", "1000 m", "1500 m", "1 Milla", "2000 m",
+                "3000 m", "3000 m Obstáculos", "2 Millas", "5000 m", "10000 m",
+                "Salto de Altura", "Salto con Pértiga", "Salto de Longitud",
+                "Triple Salto", "Lanzamiento de Peso", "Lanzamiento de Disco",
+                "Lanzamiento de Martillo", "Lanzamiento de Jabalina", "Heptatlón",
+                "Decatlón", "5000 m Marcha", "10000 m Marcha", "20 km Marcha",
+                "35 km Marcha", "5 km Ruta", "10 km Ruta", "Medio Maratón",
+                "Maratón", "Relevo 4x100 m", "Relevo 4x200 m", "Relevo 4x400 m",
+                "Relevo 4x400 m Mixto"
+            ]
+        }
+    };
+
+    // 2. Elementos DOM
+    const selectPrueba = document.getElementById('prueba-select');
+    const inputMarca = document.getElementById('marca');
+    const inputResultado = document.getElementById('resultado');
+
+    // 3. Función para actualizar las opciones del select según los radios
+    function actualizarPruebas() {
+        const radioPista = document.querySelector('input[name="tipo_pista"]:checked');
+        const radioGenero = document.querySelector('input[name="genero"]:checked');
+
+        const pista = radioPista ? radioPista.value : 'indoor';
+        const genero = radioGenero ? radioGenero.value : 'hombres';
+
+        if (pruebasData[pista] && pruebasData[pista][genero]) {
+            const lista = pruebasData[pista][genero];
+
+            selectPrueba.innerHTML = '';
+
+            // Opción por defecto
+            const defaultOption = document.createElement('option');
+            defaultOption.value = "";
+            defaultOption.textContent = "Selecciona una prueba";
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            selectPrueba.appendChild(defaultOption);
+
+            lista.forEach(prueba => {
+                const option = document.createElement('option');
+                option.value = prueba;
+                option.textContent = prueba;
+                selectPrueba.appendChild(option);
+            });
+        }
+
+        limpiarInputs();
+    }
+
+    // 4. Clasificador de disciplinas
+    function obtenerTipoPrueba(nombrePrueba) {
+        if (!nombrePrueba) return 'segundos';
+
+        const prueba = nombrePrueba.toLowerCase();
+
+        // Distancia / Altura
+        if (prueba.includes('salto') || prueba.includes('lanzamiento') || prueba.includes('peso') || prueba.includes('pesado')) {
+            return 'distancia';
+        }
+
+        // Tiempos largos (Minutos)
+        if (
+            prueba.includes('800') || prueba.includes('1000') || prueba.includes('1500') ||
+            prueba.includes('milla') || prueba.includes('2000') || prueba.includes('3000') ||
+            prueba.includes('5000') || prueba.includes('10000') || prueba.includes('marcha') ||
+            prueba.includes('ruta') || prueba.includes('maratón') || prueba.includes('obstáculos')
+        ) {
+            return 'minutos';
+        }
+
+        // Tiempos cortos (Segundos)
+        return 'segundos';
+    }
+
+    // 5. Limpieza de entradas
+    function limpiarInputs() {
+        if (inputMarca) inputMarca.value = '';
+        if (inputResultado) inputResultado.value = '';
+    }
+
+    // 6. Formateador dinámico y transparente (permite borrar de forma natural)
+    if (inputMarca) {
+        inputMarca.addEventListener('input', (e) => {
+            const pruebaSeleccionada = selectPrueba.value;
+            if (!pruebaSeleccionada) return;
+
+            const tipo = obtenerTipoPrueba(pruebaSeleccionada);
+            let raw = e.target.value.replace(/\D/g, '');
+
+            if (!raw) {
+                e.target.value = '';
+                return;
+            }
+
+            let formatted = '';
+
+            if (tipo === 'distancia' || tipo === 'segundos') {
+                // Ejemplos: "1" -> "1", "11" -> "11", "1140" -> "11.40"
+                if (raw.length <= 2) {
+                    formatted = raw;
+                } else {
+                    formatted = raw.slice(0, -2) + '.' + raw.slice(-2);
+                }
+            }
+            else if (tipo === 'minutos') {
+                if (raw.length <= 2) {
+                    formatted = raw;
+                } else if (raw.length <= 4) {
+                    formatted = raw.slice(0, -2) + '.' + raw.slice(-2);
+                } else {
+                    formatted = raw.slice(0, -4) + "'" + raw.slice(-4, -2) + '.' + raw.slice(-2);
+                }
+            }
+
+            e.target.value = formatted;
+        });
+    }
+
+    // 7. Event listeners de interacción
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', actualizarPruebas);
+    });
+
+    if (selectPrueba) {
+        selectPrueba.addEventListener('change', limpiarInputs);
+    }
+
+    // 8. Carga inicial
+    actualizarPruebas();
+</script>
+
+</html>
