@@ -50,6 +50,15 @@
 
             <div id="divider"></div>
 
+            <div id="savedList" aria-label="Resultados guardados">
+                <ul id="savedItems"></ul>
+                <p id="savedListMessage" role="status">Pulsa "Guardar" para añadir resultados.</p>
+            </div>
+            <div class="sumaPuntos">
+                <h2>Suma de Puntos</h2>
+                <input class="numerosInput" type="text" name="resultadoPuntos" id="resultadoPuntos" readonly>
+            </div>
+
         </form>
     </div>
 
@@ -109,6 +118,9 @@
     const selectPrueba = document.getElementById('prueba-select');
     const inputMarca = document.getElementById('marca');
     const inputResultado = document.getElementById('resultado');
+    const saveButton = document.getElementById('saveButton');
+    const savedItems = document.getElementById('savedItems');
+    const savedListMessage = document.getElementById('savedListMessage');
 
     // 3. Función para actualizar las opciones del select según los radios
     function actualizarPruebas() {
@@ -219,6 +231,53 @@
     if (selectPrueba) {
         selectPrueba.addEventListener('change', limpiarInputs);
     }
+
+    saveButton.addEventListener('click', () => {
+        const prueba = selectPrueba.value;
+        const marca = inputMarca.value.trim();
+
+        if (!prueba) {
+            savedListMessage.textContent = 'Selecciona una prueba antes de guardar.';
+            selectPrueba.focus();
+            return;
+        }
+
+        if (!marca) {
+            savedListMessage.textContent = 'Introduce una marca antes de guardar.';
+            inputMarca.focus();
+            return;
+        }
+
+        const item = document.createElement('li');
+        item.className = 'savedItem';
+
+        const pruebaTexto = document.createElement('span');
+        pruebaTexto.className = 'savedItemPrueba';
+        pruebaTexto.textContent = prueba;
+
+        const marcaTexto = document.createElement('span');
+        marcaTexto.textContent = `Marca: ${marca}`;
+
+        const puntuacionTexto = document.createElement('span');
+        puntuacionTexto.textContent = `Puntuación: ${inputResultado.value.trim() || '—'}`;
+
+        const eliminarButton = document.createElement('button');
+        eliminarButton.className = 'deleteSavedItem';
+        eliminarButton.type = 'button';
+        eliminarButton.textContent = 'Eliminar';
+        eliminarButton.setAttribute('aria-label', `Eliminar resultado de ${prueba}`);
+        eliminarButton.addEventListener('click', () => {
+            item.remove();
+            if (savedItems.children.length === 0) {
+                savedListMessage.textContent = 'Todavía no hay resultados guardados.';
+            }
+        });
+
+        item.append(pruebaTexto, marcaTexto, puntuacionTexto, eliminarButton);
+        savedItems.appendChild(item);
+        savedListMessage.textContent = '';
+        limpiarInputs();
+    });
 
     // 8. Carga inicial
     actualizarPruebas();
